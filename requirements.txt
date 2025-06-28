@@ -1,0 +1,11 @@
+# LazyMe project dependencies
+
+# Core dependencies
+attrs>=21.4.0
+requests>=2.28.0
+
+# API integrations
+openai>=1.0.0
+
+# No additional dependencies are needed for standard libraries used:
+# - json, os, re, argparse, sys, subprocess, platform, etc.
