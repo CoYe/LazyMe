@@ -6,7 +6,7 @@ from openai import OpenAI
 
 @define
 class GPTHandler:
-    _api_key: str = None
+    _api_key: str | None = None
     setting: str = ("You are a helpful senior software developer oriented on "
                     "high speed efficient errorless python code. Your responses are "
                     "in json format.")

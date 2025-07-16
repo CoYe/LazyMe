@@ -1,11 +1,11 @@
 from attrs import define
 
-from gpt_handler.ask_gpt import GPTHandler
-
+from llm_handler.base_handler import BaseHandler
 
 @define
 class BaseFlow:
-    api: GPTHandler
+    llm_handler: BaseHandler
 
-    def execute(self):
+    def execute(self, input: str) -> object:
+        """        Execute the flow with the given input.   """
         pass

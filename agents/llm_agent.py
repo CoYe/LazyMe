@@ -10,7 +10,7 @@ import sys
 import re
 from typing import Optional, List, Dict, Any
 
-from gpt_handler.ask_ollama import OllamaHandler
+from llm_handler.ask_ollama import OllamaHandler
 from actions.actions_container import default_registry
 
 
