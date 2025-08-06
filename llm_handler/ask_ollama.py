@@ -27,7 +27,7 @@ class OllamaHandler(BaseHandler):
     config_list = [
         {
             # Let's choose the Meta's Llama 3.1 model (model names must match Ollama exactly)
-            "model": "gemma3:27b-it-qat",
+            "model": "devstral:latest",
             # We specify the API Type as 'ollama' so it uses the Ollama client class
             "api_type": "ollama",
             "stream": False,
