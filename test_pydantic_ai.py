@@ -3,12 +3,11 @@ import asyncio
 import logging
 import time
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, PromptedOutput
 from pydantic_ai.settings import ModelSettings
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
-from llm_handler.ask_ollama import SYSTEM_MESSAGE
 from models.clean_instructions import CleanInstructions
 
 # Configure logging
@@ -41,10 +40,22 @@ logger.debug(f"Created OpenAI model with base_url: http://localhost:11434/v1")
 logger.debug(f"Model name: devstral:latest")
 logger.debug(f"Configured timeouts -> model: {MODEL_TIMEOUT_SECONDS}s, overall: {OVERALL_TIMEOUT_SECONDS}s")
 
+# A strict system prompt to enforce a single JSON object output matching the schema
+JSON_ENFORCING_PROMPT = (
+    "You are a structured planner. Output ONLY a single JSON object matching the provided schema. "
+    "Do not include any explanation, code fences, or extra text. Populate ALL fields: "
+    "code_architecture, deployment_steps, development_steps, test_steps, app_name, app_description, "
+    "app_features, app_requirements, app_technologies, app_ui_design, app_api_integration, app_security, "
+    "app_performance, app_scalability, app_maintenance, app_documentation, app_user_feedback. If uncertain, "
+    "use 'TBD' with a brief note. Return only valid JSON."
+)
+
 agent = Agent(
-    ollama_model, 
-    output_type=CleanInstructions,
-    system_prompt=SYSTEM_MESSAGE
+    ollama_model,
+    # Use prompted structured output so the model returns JSON (no tool calls), more compatible with Ollama
+    output_type=PromptedOutput([CleanInstructions]),
+    system_prompt=JSON_ENFORCING_PROMPT,
+    retries=3,
 )
 
 logger.debug("Agent created successfully with CleanInstructions output type")
