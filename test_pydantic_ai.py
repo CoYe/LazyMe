@@ -22,14 +22,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Centralized timeout configuration
+MODEL_TIMEOUT_SECONDS = 2300  # per-request timeout used by pydantic-ai HTTP client
+OVERALL_TIMEOUT_SECONDS = MODEL_TIMEOUT_SECONDS + 120  # asyncio.wait_for safety buffer
 
-# class CityLocation(BaseModel):
-#     city: str
-#     country: str
 
 logger.debug("Initializing Ollama model and agent...")
 
-model_setting = ModelSettings(timeout=1800)
+model_setting = ModelSettings(timeout=MODEL_TIMEOUT_SECONDS)
 
 ollama_model = OpenAIModel(
     model_name='devstral:latest', 
@@ -39,6 +39,7 @@ ollama_model = OpenAIModel(
 
 logger.debug(f"Created OpenAI model with base_url: http://localhost:11434/v1")
 logger.debug(f"Model name: devstral:latest")
+logger.debug(f"Configured timeouts -> model: {MODEL_TIMEOUT_SECONDS}s, overall: {OVERALL_TIMEOUT_SECONDS}s")
 
 agent = Agent(
     ollama_model, 
@@ -64,11 +65,11 @@ async def run_with_timeout():
             "You should be able to start the Sandbox by pressing Reserve button inside the Blueprint page.")
         
         logger.debug(f"Request text length: {len(request_text)} characters")
-        logger.debug(f"Timeout set to: 1800 seconds (30 minutes)")
+        logger.debug(f"Timeouts -> model: {MODEL_TIMEOUT_SECONDS}s; overall: {OVERALL_TIMEOUT_SECONDS}s")
         
         result = await asyncio.wait_for(
             agent.run(request_text),
-            timeout=1800  # 30 minutes timeout for huge requests
+            timeout=OVERALL_TIMEOUT_SECONDS
         )
         
         end_time = time.time()
@@ -78,14 +79,20 @@ async def run_with_timeout():
         print(f"Request completed successfully in {elapsed_time:.2f} seconds!")
         
         logger.debug(f"Result type: {type(result)}")
-        if hasattr(result, 'data'):
-            logger.debug(f"Result data type: {type(result.data)}")
+        try:
+            logger.debug(f"Result length (str): {len(str(result))} characters")
+        except Exception:
+            logger.debug("Result length unavailable")
         
         return result
     except asyncio.TimeoutError:
         end_time = time.time()
         elapsed_time = end_time - start_time
-        error_msg = f"Request timed out after {elapsed_time:.2f} seconds (30 minutes limit). Consider breaking down your request into smaller parts."
+        limit_min = OVERALL_TIMEOUT_SECONDS/60
+        error_msg = (
+            f"Request timed out after {elapsed_time:.2f} seconds (~{limit_min:.0f} minutes limit). "
+            "Consider breaking down your request into smaller parts."
+        )
         logger.error(error_msg)
         print(error_msg)
         return None
