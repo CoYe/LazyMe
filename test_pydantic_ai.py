@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Centralized timeout configuration
-MODEL_TIMEOUT_SECONDS = 2300  # per-request timeout used by pydantic-ai HTTP client
+MODEL_TIMEOUT_SECONDS = 2800  # per-request timeout used by pydantic-ai HTTP client
 OVERALL_TIMEOUT_SECONDS = MODEL_TIMEOUT_SECONDS + 120  # asyncio.wait_for safety buffer
 
 
